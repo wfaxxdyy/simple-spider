@@ -1,7 +1,12 @@
 package cn.wf.simplespider.service;
 
 import cn.wf.simplespider.entity.Anime;
+import cn.wf.simplespider.entity.VideoInfo;
+import cn.wf.simplespider.enums.BilibiliSectionEnum;
 import cn.wf.simplespider.enums.SourceEnum;
+import cn.wf.simplespider.factory.ProcessPageInfoFactory;
+import cn.wf.simplespider.factory.Processor.Processor;
+import cn.wf.simplespider.factory.Processor.impl.Bilibili;
 import cn.wf.simplespider.mapper.AnimeMapper;
 import cn.wf.simplespider.model.PageInfo;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
@@ -13,10 +18,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.htmlcleaner.XPatherException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 /**
  * <p>
@@ -29,8 +37,13 @@ import java.util.Date;
 @Service
 public class AnimeService extends ServiceImpl<AnimeMapper, Anime> {
 
-    private static final String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36";
+    @Autowired
+    private VideoInfoService videoInfoService;
 
+    @Autowired
+    private ProcessPageInfoFactory processPageInfoFactory;
+
+    private static final String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36";
 
     public PageInfo downloadPageInfo(String url) {
         PageInfo pageInfo = null;
@@ -72,15 +85,15 @@ public class AnimeService extends ServiceImpl<AnimeMapper, Anime> {
 
     private PageInfo buildPageInfo(HttpEntity responseEntity, String url) throws IOException {
         PageInfo pageInfo = new PageInfo();
-        if(url.contains(SourceEnum.BILIBILI.getDomain())){
+        if (url.contains(SourceEnum.BILIBILI.getDomain())) {
             pageInfo.setSource(SourceEnum.BILIBILI.getSource());
-        }else if(url.contains(SourceEnum.IQIYI.getDomain())){
+        } else if (url.contains(SourceEnum.IQIYI.getDomain())) {
             pageInfo.setSource(SourceEnum.IQIYI.getSource());
-        }else if(url.contains(SourceEnum.VQQ.getDomain())){
+        } else if (url.contains(SourceEnum.VQQ.getDomain())) {
             pageInfo.setSource(SourceEnum.VQQ.getSource());
-        }else if(url.contains(SourceEnum.YOUKU.getDomain())){
+        } else if (url.contains(SourceEnum.YOUKU.getDomain())) {
             pageInfo.setSource(SourceEnum.YOUKU.getSource());
-        }else {
+        } else {
             pageInfo.setSource(SourceEnum.DOUBAN.getSource());
         }
         pageInfo.setContent(EntityUtils.toString(responseEntity));
@@ -89,9 +102,9 @@ public class AnimeService extends ServiceImpl<AnimeMapper, Anime> {
         return pageInfo;
     }
 
-    public void processPageInfo(PageInfo pageInfo) {
-
-
-
+    public void processPageInfo(PageInfo pageInfo) throws XPatherException {
+        Processor processor = processPageInfoFactory.getProcessor(SourceEnum.BILIBILI.getType());
+        List<VideoInfo> videoInfoList = processor.processPageInfo(pageInfo, BilibiliSectionEnum.TOTAL.getCode());
+        videoInfoService.insertBatch(videoInfoList);
     }
 }
