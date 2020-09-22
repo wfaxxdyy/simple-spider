@@ -3,6 +3,7 @@ package cn.wf.simplespider.factory.Processor.impl;
 import cn.wf.simplespider.entity.VideoInfo;
 import cn.wf.simplespider.factory.Processor.Processor;
 import cn.wf.simplespider.model.PageInfo;
+import cn.wf.simplespider.utils.TagNodeUtil;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.TagNode;
 import org.htmlcleaner.XPatherException;
@@ -33,30 +34,27 @@ public class Bilibili implements Processor {
             //section
             videoInfo.setSection(sectionCode);
             // rank
-            Object[] ranks = node.evaluateXPath(prefix + "li[" + i + "]/div[1]");
-            TagNode rank = (TagNode) ranks[0];
-            videoInfo.setRank(Long.valueOf(rank.getText().toString()));
+            String rank = TagNodeUtil.getInfoByXPath(node, prefix + "li[" + i + "]/div[1]");
+            videoInfo.setRank(Long.valueOf(rank));
             // title
-            Object[] titles = node.evaluateXPath(prefix + "li[" + i + "]/div[2]/div[2]/a");
-            TagNode title = (TagNode) titles[0];
-            videoInfo.setTitle(title.getText().toString());
-            // ptss
-            Object[] ptss = node.evaluateXPath(prefix + "li[" + i + "]/div[2]/div[2]/div[2]/div");
-            TagNode pts = (TagNode) ptss[0];
-            videoInfo.setPts(Long.valueOf(pts.getText().toString()));
+            String title = TagNodeUtil.getInfoByXPath(node, prefix + "li[" + i + "]/div[2]/div[2]/a");
+            videoInfo.setTitle(title);
+            // url
+            String url = TagNodeUtil.getAttributeByName(node, prefix + "li[" + i + "]/div[2]/div[2]/a", "href");
+            videoInfo.setUrl(url);
+            // pts
+            String pts = TagNodeUtil.getInfoByXPath(node, prefix + "li[" + i + "]/div[2]/div[2]/div[2]/div");
+            videoInfo.setPts(Long.valueOf(pts));
             // play
-            Object[] plays = node.evaluateXPath(prefix + "li[" + i + "]/div[2]/div[2]/div[1]/span[1]");
-            TagNode play = (TagNode) plays[0];
-            videoInfo.setPlay(play.getText().toString());
+            String play = TagNodeUtil.getInfoByXPath(node, prefix + "li[" + i + "]/div[2]/div[2]/div[1]/span[1]");
+            videoInfo.setPlay(play);
             // author
-            Object[] authors = node.evaluateXPath(prefix + "li[" + i + "]/div[2]/div[2]/div[1]/a/span");
-            TagNode author = (TagNode) authors[0];
-            videoInfo.setAuthor(author.getText().toString());
-            // comments
-            Object[] comments = node.evaluateXPath(prefix + "li[" + i + "]/div[2]/div[2]/div[1]/span[2]");
-            TagNode comment = (TagNode) comments[0];
-            videoInfo.setComments(comment.getText().toString());
-            //日期
+            String author = TagNodeUtil.getInfoByXPath(node, prefix + "li[" + i + "]/div[2]/div[2]/div[1]/a/span");
+            videoInfo.setAuthor(author);
+            // comment
+            String comments = TagNodeUtil.getInfoByXPath(node, prefix + "li[" + i + "]/div[2]/div[2]/div[1]/span[2]");
+            videoInfo.setComments(comments);
+            // day
             videoInfo.setDay(new Date());
             videoInfoList.add(videoInfo);
 

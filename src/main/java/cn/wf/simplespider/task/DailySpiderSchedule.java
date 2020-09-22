@@ -34,7 +34,7 @@ public class DailySpiderSchedule {
     @Autowired
     private ProcessPageInfoFactory processPageInfoFactory;
 
-    @Scheduled(cron = "0 7 17 * * ?")
+    @Scheduled(cron = "0 25 10 * * ?")
     public void getBilibiliVideoInfo() throws XPatherException {
         //全站榜
         String BilibiliUrlPreix = "https://www.bilibili.com/ranking/all/";

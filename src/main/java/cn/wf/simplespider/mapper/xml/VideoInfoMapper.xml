@@ -8,6 +8,7 @@
         <result column="section" property="section" />
         <result column="rank" property="rank" />
         <result column="title" property="title" />
+        <result column="url" property="url" />
         <result column="pts" property="pts" />
         <result column="play" property="play" />
         <result column="comments" property="comments" />
@@ -17,7 +18,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, section, rank, title, pts, play, comments, author, day
+        id, section, rank, title, url, pts, play, comments, author, day
     </sql>
 
 </mapper>

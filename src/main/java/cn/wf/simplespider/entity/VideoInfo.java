@@ -21,7 +21,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author wang fan
- * @since 2020-09-21
+ * @since 2020-09-22
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -51,6 +51,11 @@ public class VideoInfo extends Model<VideoInfo> {
      * 标题
      */
     private String title;
+
+    /**
+     * 链接
+     */
+    private String url;
 
     /**
      * 综合得分
