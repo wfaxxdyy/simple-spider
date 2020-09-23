@@ -5,6 +5,7 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="cn.wf.simplespider.entity.VideoInfo">
         <id column="id" property="id" />
+        <result column="video_id" property="videoId" />
         <result column="section" property="section" />
         <result column="rank" property="rank" />
         <result column="title" property="title" />
@@ -18,7 +19,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, section, rank, title, url, pts, play, comments, author, day
+        id, video_id, section, rank, title, url, pts, play, comments, author, day
     </sql>
 
 </mapper>

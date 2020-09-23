@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * @Author: fan.wang
  * @Date: 2020/9/21 15:31
- * @description:
+ * @description: 定时爬虫任务
  */
 @Component
 @EnableScheduling
@@ -34,13 +34,13 @@ public class DailySpiderSchedule {
     @Autowired
     private ProcessPageInfoFactory processPageInfoFactory;
 
-    @Scheduled(cron = "0 25 10 * * ?")
+    @Scheduled(cron = "0 50 9 * * ?")
     public void getBilibiliVideoInfo() throws XPatherException {
         //全站榜
         String BilibiliUrlPreix = "https://www.bilibili.com/ranking/all/";
         //每日榜
         String BilibiliUrlSuffix = "/0/1";
-
+        //查询各分区榜单数据
         for (BilibiliSectionEnum section:BilibiliSectionEnum.values()){
             PageInfo pageInfo = animeService.downloadPageInfo(BilibiliUrlPreix + section.getCode() + BilibiliUrlSuffix);
             Processor processor = processPageInfoFactory.getProcessor(SourceEnum.BILIBILI.getType());

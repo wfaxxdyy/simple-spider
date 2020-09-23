@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @Author: fan.wang
  * @Date: 2020/9/21 9:53
- * @description:
+ * @description: 页面处理器接口
  */
 public interface Processor {
 

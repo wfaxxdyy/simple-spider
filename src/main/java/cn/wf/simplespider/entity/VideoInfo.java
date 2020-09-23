@@ -3,6 +3,7 @@ package cn.wf.simplespider.entity;
 import com.baomidou.mybatisplus.enums.IdType;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotations.TableId;
+import com.baomidou.mybatisplus.annotations.TableField;
 import com.baomidou.mybatisplus.activerecord.Model;
 import com.baomidou.mybatisplus.annotations.TableName;
 import java.io.Serializable;
@@ -36,6 +37,12 @@ public class VideoInfo extends Model<VideoInfo> {
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
+
+    /**
+     * 视频id
+     */
+    @TableField("video_id")
+    private Long videoId;
 
     /**
      * 分区

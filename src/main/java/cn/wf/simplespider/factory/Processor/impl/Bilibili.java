@@ -16,12 +16,19 @@ import java.util.List;
 /**
  * @Author: fan.wang
  * @Date: 2020/9/21 9:52
- * @description:
+ * @description: B站页面处理器
  */
 @Component
 public class Bilibili implements Processor {
 
 
+    /**
+     * 获取分区每日前十榜单
+     * @param pageInfo
+     * @param sectionCode
+     * @return
+     * @throws XPatherException
+     */
     @Override
     public List<VideoInfo> processPageInfo(PageInfo pageInfo, Integer sectionCode) throws XPatherException {
         String content = pageInfo.getContent();
@@ -33,6 +40,9 @@ public class Bilibili implements Processor {
             VideoInfo videoInfo = new VideoInfo();
             //section
             videoInfo.setSection(sectionCode);
+            //videoId
+            String videoId = TagNodeUtil.getAttributeByName(node, prefix + "li[" + i + "]", "data-id");
+            videoInfo.setVideoId(Long.valueOf(videoId));
             // rank
             String rank = TagNodeUtil.getInfoByXPath(node, prefix + "li[" + i + "]/div[1]");
             videoInfo.setRank(Long.valueOf(rank));
