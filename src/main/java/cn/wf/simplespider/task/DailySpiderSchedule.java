@@ -14,7 +14,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @Author: fan.wang
@@ -34,19 +37,32 @@ public class DailySpiderSchedule {
     @Autowired
     private ProcessPageInfoFactory processPageInfoFactory;
 
-    @Scheduled(cron = "0 50 9 * * ?")
+    @Scheduled(cron = "0 42 16 * * ?")
     public void getBilibiliVideoInfo() throws XPatherException {
         //全站榜
         String BilibiliUrlPreix = "https://www.bilibili.com/ranking/all/";
         //每日榜
         String BilibiliUrlSuffix = "/0/1";
+        List<VideoInfo> data = new ArrayList<>(140);
+        //创建线程池
+        ExecutorService pool = Executors.newFixedThreadPool(20);
         //查询各分区榜单数据
-        for (BilibiliSectionEnum section:BilibiliSectionEnum.values()){
-            PageInfo pageInfo = animeService.downloadPageInfo(BilibiliUrlPreix + section.getCode() + BilibiliUrlSuffix);
-            Processor processor = processPageInfoFactory.getProcessor(SourceEnum.BILIBILI.getType());
-            List<VideoInfo> infoList = processor.processPageInfo(pageInfo, section.getCode());
-            videoInfoService.insertBatch(infoList);
+        for (BilibiliSectionEnum section : BilibiliSectionEnum.values()) {
+            pool.execute(() -> {
+                PageInfo pageInfo = animeService.downloadPageInfo(BilibiliUrlPreix + section.getCode() + BilibiliUrlSuffix);
+                Processor processor = processPageInfoFactory.getProcessor(SourceEnum.BILIBILI.getType());
+                List<VideoInfo> infoList = null;
+                try {
+                    infoList = processor.processPageInfo(pageInfo, section.getCode());
+                } catch (XPatherException e) {
+                    e.printStackTrace();
+                }
+                data.addAll(infoList);
+                //判断数据是否全部加载完毕，完毕后存入数据库
+                if (data.size() == 140) {
+                    videoInfoService.insertBatch(data);
+                }
+            });
         }
-
     }
 }

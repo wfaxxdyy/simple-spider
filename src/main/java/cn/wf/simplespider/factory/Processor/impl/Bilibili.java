@@ -34,7 +34,7 @@ public class Bilibili implements Processor {
         String content = pageInfo.getContent();
         HtmlCleaner htmlCleaner = new HtmlCleaner();
         TagNode node = htmlCleaner.clean(content);
-        List<VideoInfo> videoInfoList = new ArrayList<>();
+        List<VideoInfo> videoInfoList = new ArrayList<>(10);
         String prefix = "//*[@id=\"app\"]/div[1]/div/div[1]/div[2]/div[3]/ul/";
         for (int i = 1; i <= 10; i++) {
             VideoInfo videoInfo = new VideoInfo();
