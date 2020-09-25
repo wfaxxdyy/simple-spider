@@ -23,7 +23,7 @@ public class MpGenerator {
     public static String PARENT = "cn.wf";
     public static String MODULE_NAME = "simplespider";
     public static String[] TABLE_NAMES = new String[]{
-            "ss_video_info"
+            "ss_video_info","ss_video_extend"
     };
 
     public static void main(String[] args) {

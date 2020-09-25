@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wf.simplespider.mapper.VideoExtendMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.wf.simplespider.entity.VideoExtend">
+        <id column="id" property="id" />
+        <result column="bvid" property="bvid" />
+        <result column="video_id" property="videoId" />
+        <result column="like" property="like" />
+        <result column="coin" property="coin" />
+        <result column="favorite" property="favorite" />
+        <result column="share" property="share" />
+        <result column="danmaku" property="danmaku" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, bvid, video_id, like, coin, favorite, share, danmaku
+    </sql>
+
+</mapper>

@@ -1,55 +1,39 @@
-package cn.wf.simplespider.service;
+package cn.wf.simplespider.utils;
 
-import cn.wf.simplespider.entity.Anime;
-import cn.wf.simplespider.entity.VideoInfo;
-import cn.wf.simplespider.enums.BilibiliSectionEnum;
 import cn.wf.simplespider.enums.SourceEnum;
-import cn.wf.simplespider.factory.ProcessPageInfoFactory;
-import cn.wf.simplespider.factory.Processor.Processor;
-import cn.wf.simplespider.factory.Processor.impl.Bilibili;
-import cn.wf.simplespider.mapper.AnimeMapper;
 import cn.wf.simplespider.model.PageInfo;
-import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import org.apache.http.HttpEntity;
 import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.htmlcleaner.XPatherException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 
 /**
- * <p>
- * 服务实现类
- * </p>
- *
- * @author wang fan
- * @since 2020-09-18
+ * @Author: fan.wang
+ * @Date: 2020/9/24 17:46
+ * @description: 页面下载工具类
  */
-@Service
-public class AnimeService extends ServiceImpl<AnimeMapper, Anime> {
+public class PageDownloadUtil {
 
-    @Autowired
-    private VideoInfoService videoInfoService;
+    private static final String userAgent =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36";
 
-    @Autowired
-    private ProcessPageInfoFactory processPageInfoFactory;
-
-    private static final String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36";
-
-    public PageInfo downloadPageInfo(String url) {
+    public static PageInfo downloadPageInfo(String url) {
         PageInfo pageInfo = null;
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+
         // 创建Get请求
         HttpGet httpGet = new HttpGet(url);
+        RequestConfig defaultConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build();
+        httpGet.setConfig(defaultConfig);
         httpGet.setHeader("User-Agent", userAgent);
         CloseableHttpResponse response = null;
         try {
@@ -83,7 +67,7 @@ public class AnimeService extends ServiceImpl<AnimeMapper, Anime> {
         return pageInfo;
     }
 
-    private PageInfo buildPageInfo(HttpEntity responseEntity, String url) throws IOException {
+    private static PageInfo buildPageInfo(HttpEntity responseEntity, String url) throws IOException {
         PageInfo pageInfo = new PageInfo();
         if (url.contains(SourceEnum.BILIBILI.getDomain())) {
             pageInfo.setSource(SourceEnum.BILIBILI.getSource());
@@ -100,11 +84,5 @@ public class AnimeService extends ServiceImpl<AnimeMapper, Anime> {
         pageInfo.setCreateTime(new Date());
         pageInfo.setUpdateTime(new Date());
         return pageInfo;
-    }
-
-    public void processPageInfo(PageInfo pageInfo) throws XPatherException {
-        Processor processor = processPageInfoFactory.getProcessor(SourceEnum.BILIBILI.getType());
-        List<VideoInfo> videoInfoList = processor.processPageInfo(pageInfo, BilibiliSectionEnum.TOTAL.getCode());
-        videoInfoService.insertBatch(videoInfoList);
     }
 }
