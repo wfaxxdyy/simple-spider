@@ -20,3 +20,7 @@ spring:
       testWhileIdle: true
       testOnBorrow: false
       testOnReturn: false
+logging:
+  file:
+    path: C:\Users\fanwa\IdeaProjects\simple-spider\src\main\resources
+  level: info

@@ -39,12 +39,19 @@ public class VideoInfoController {
         return Resp.success("success!");
     }
 
+    /**
+     * 手动插入VideoExtend
+     * @return
+     */
     @RequestMapping("/flush/video/extend")
     public Resp flushVideoExtend(){
-        List<VideoInfo> infoList = videoInfoService.selectList(new EntityWrapper<VideoInfo>().in("id",2));
-        System.out.println(infoList.size());
-        videoExtendService.saveVideoExtend2(infoList);
-        return Resp.success();
+        List<VideoInfo> infoList = videoInfoService.selectList(new EntityWrapper<VideoInfo>().between("id",1,560));
+        int size = videoExtendService.saveVideoExtend2(infoList);
+        return Resp.success("成功插入数据"+size+"条！");
     }
 
+    @RequestMapping("/validate/video/info")
+    public void validateVideoInfo(){
+        videoInfoService.validateVideoInfo();
+    }
 }

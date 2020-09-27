@@ -38,10 +38,20 @@ public class VideoInfoService extends ServiceImpl<VideoInfoMapper, VideoInfo> {
     @Autowired
     private ProcessPageInfoFactory processPageInfoFactory;
 
+    /**
+     * 处理页面
+     * @param pageInfo
+     * @throws XPatherException
+     */
     public void processPageInfo(PageInfo pageInfo) throws XPatherException {
         Processor processor = processPageInfoFactory.getProcessor(SourceEnum.BILIBILI.getType());
         List<VideoInfo> videoInfoList = processor.processPageInfo(pageInfo, BilibiliSectionEnum.TOTAL.getCode());
         insertBatch(videoInfoList);
     }
 
+    /**
+     * 刷新视屏库
+     */
+    public void validateVideoInfo() {
+    }
 }

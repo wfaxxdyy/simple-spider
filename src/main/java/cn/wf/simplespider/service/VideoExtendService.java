@@ -2,32 +2,30 @@ package cn.wf.simplespider.service;
 
 import cn.wf.simplespider.entity.VideoExtend;
 import cn.wf.simplespider.entity.VideoInfo;
-import cn.wf.simplespider.enums.SourceEnum;
-import cn.wf.simplespider.factory.ProcessPageInfoFactory;
-import cn.wf.simplespider.factory.Processor.Processor;
 import cn.wf.simplespider.mapper.VideoExtendMapper;
 import cn.wf.simplespider.model.PageInfo;
-import cn.wf.simplespider.model.Resp;
 import cn.wf.simplespider.model.resp.VideoExtendResponse;
 import cn.wf.simplespider.model.resp.VideoResponse;
 import cn.wf.simplespider.utils.PageDownloadUtil;
+import cn.wf.simplespider.utils.RandomUtil;
 import cn.wf.simplespider.utils.TagNodeUtil;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.TagNode;
-import org.htmlcleaner.XPatherException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @Author: fan.wang
@@ -35,6 +33,7 @@ import java.util.stream.Collectors;
  * @description: videoExtend
  */
 
+@Slf4j
 @Service
 public class VideoExtendService extends ServiceImpl<VideoExtendMapper, VideoExtend> {
 
@@ -115,22 +114,40 @@ public class VideoExtendService extends ServiceImpl<VideoExtendMapper, VideoExte
      *
      * @param data
      */
-    public void saveVideoExtend2(List<VideoInfo> data) {
+    public int saveVideoExtend2(List<VideoInfo> data) {
         //RestTemplate发送请求
         RestTemplate restTemplate = new RestTemplate();
         //请求前缀
         String prefix = "https://api.bilibili.com/x/web-interface/archive/stat?aid=";
+        //userAgent
+        String userAgent =
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36";
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("User-Agent", userAgent);
         //待更新视频扩展表集合
-        List<VideoExtend> videoExtendList = new ArrayList<>();
+        List<VideoExtend> videoExtendList = Collections.synchronizedList(new ArrayList<>());
         //线程池
-        ExecutorService poolExecutor = Executors.newFixedThreadPool(5);
+        ExecutorService poolExecutor = Executors.newFixedThreadPool(10);
         for (VideoInfo videoInfo : data) {
             poolExecutor.execute(() -> {
+                try {
+                    Thread.sleep(1000 * RandomUtil.getRandomInt(1, 10));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 String url = prefix + videoInfo.getVideoId();
-                VideoResponse videoResponse = restTemplate.getForObject(url, VideoResponse.class);
+                ResponseEntity<VideoResponse> response = null;
+                try {
+                    response = restTemplate.exchange(url, HttpMethod.GET,
+                            new HttpEntity<String>(headers), VideoResponse.class);
+                } catch (Exception e) {
+                    log.error("视频{}获取页面失败，原因如下：" + e.getMessage(),videoInfo.getVideoId());
+                }
+                VideoResponse videoResponse = response.getBody();
                 VideoExtend videoExtend = buildVideoExtend(videoResponse, videoInfo);
-                videoExtendList.add(videoExtend);
-                System.out.println(Thread.currentThread().getName() + videoExtend + "集合大小" + videoExtendList.size());
+                if (videoExtend != null) {
+                    videoExtendList.add(videoExtend);
+                }
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e) {
@@ -141,11 +158,12 @@ public class VideoExtendService extends ServiceImpl<VideoExtendMapper, VideoExte
         poolExecutor.shutdown();
         while (true) {//等待所有任务都执行结束
             if (poolExecutor.isTerminated()) {//所有的子线程都结束了
-                System.out.println(videoExtendList.size());
                 insertBatch(videoExtendList);
+                log.info("本次成功插入VideoExtend数据总计：{}条", videoExtendList.size());
                 break;
             }
         }
+        return videoExtendList.size();
     }
 
     /**
@@ -157,7 +175,8 @@ public class VideoExtendService extends ServiceImpl<VideoExtendMapper, VideoExte
      */
     private VideoExtend buildVideoExtend(VideoResponse videoResponse, VideoInfo videoInfo) {
         if (videoResponse == null || videoResponse.getData() == null) {
-            throw new NullPointerException();
+            log.error("视频id为：" + videoInfo.getVideoId() + "，不存在！！！");
+            return null;
         }
         VideoExtendResponse videoExtendResponse = videoResponse.getData();
         VideoExtend videoExtend = new VideoExtend();
